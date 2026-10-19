@@ -64,6 +64,7 @@ fn rss(pid: u32) -> usize {
     statm.resident
 }
 
+const SEP: char = '\t';
 fn main() {
     let args = Args::parse();
 
@@ -125,9 +126,9 @@ fn main() {
 
     let max_collected = samples.iter().map(|s| s.len()).max().unwrap();
 
-    print!("mean,stdev");
+    print!("mean{}stdev", SEP);
     for i in 0..args.n {
-        print!(",");
+        print!("{}", SEP);
         print!("{}", i);
     }
     println!();
@@ -147,9 +148,9 @@ fn main() {
             f64::sqrt(expected_sum_squares - mean * mean)
         };
 
-        print!("{},{}", mean, stdev);
+        print!("{}{}{}", mean, SEP, stdev);
         for i in 0..args.n {
-            print!(",");
+            print!("{}", SEP);
             let value = samples[i].get(j).map(|v| v.to_string()).unwrap_or_default();
             print!("{}", value);
         }
