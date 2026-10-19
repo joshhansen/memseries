@@ -115,6 +115,8 @@ fn main() {
             }
 
             if start.elapsed().unwrap() > duration {
+                let mut p = p;
+                p.kill().unwrap();
                 samples.push(run_samples);
                 eprintln!("Run {} done", i);
                 break 'inner;
