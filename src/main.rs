@@ -125,19 +125,31 @@ fn main() {
 
     let max_collected = samples.iter().map(|s| s.len()).max().unwrap();
 
+    print!("mean,stdev");
     for i in 0..args.n {
-        if i > 0 {
-            print!(",");
-        }
+        print!(",");
         print!("{}", i);
     }
     println!();
 
     for j in 0..max_collected {
-        for i in 0..args.n {
-            if i > 0 {
-                print!(",");
+        let total: usize = (0..args.n).map(|i| samples[i][j]).sum();
+        let mean = total as f64 / args.n as f64;
+
+        let stdev = {
+            let mut sum_squares = 0f64;
+            for x in (0..args.n).map(|i| samples[i][j]) {
+                sum_squares += (x as f64) * (x as f64);
             }
+
+            let expected_sum_squares = sum_squares / args.n as f64;
+
+            f64::sqrt(expected_sum_squares - mean * mean)
+        };
+
+        print!("{},{}", mean, stdev);
+        for i in 0..args.n {
+            print!(",");
             let value = samples[i].get(j).map(|v| v.to_string()).unwrap_or_default();
             print!("{}", value);
         }
