@@ -17,7 +17,7 @@ struct Args {
     #[arg()]
     cmd: String,
 
-    /// Number of times to run
+    /// Number of times to run the program we're analyzing
     #[arg(short, default_value_t = 5)]
     n: usize,
 
