@@ -1,5 +1,6 @@
 use std::{
-    process::Command,
+    ffi::OsStr,
+    process::{Child, Command, Stdio},
     time::{Duration, SystemTime},
 };
 
@@ -65,6 +66,10 @@ fn rss(pid: u32) -> usize {
     statm.resident
 }
 
+fn spawn<S: AsRef<OsStr>>(s: S) -> Child {
+    Command::new(s).stdout(Stdio::null()).spawn().unwrap()
+}
+
 fn end_process(p: &mut Child) {
     p.kill().unwrap();
     p.wait().unwrap();
@@ -88,7 +93,7 @@ fn main() {
     for i in 0..args.burn_in {
         eprintln!("Burn-in {}", i);
 
-        let mut p = Command::new(&args.cmd).spawn().unwrap();
+        let mut p = spawn(&args.cmd);
 
         std::thread::sleep(duration);
 
@@ -102,7 +107,7 @@ fn main() {
         eprintln!("Run {}", i);
         let start = SystemTime::now();
         let last_sample: Option<SystemTime> = None;
-        let p = Command::new(&args.cmd).spawn().unwrap();
+        let p = spawn(&args.cmd);
 
         let pid = p.id();
 
