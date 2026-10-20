@@ -68,7 +68,7 @@ fn main() {
     let args = Args::parse();
 
     println!(
-        "Running {} {} times for {}; burn-in of {} times; sampling every {}; output units of {}, precision of {} digits after decimal",
+        "Running {} {} times for {}; burn-in of {} times; sampling every {}; output units of {}; precision {} digits after decimal",
         args.cmd,
         args.n,
         args.duration,
