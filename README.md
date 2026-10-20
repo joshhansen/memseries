@@ -16,7 +16,7 @@ For example, this will run the `sample` program with default settings and store 
 
 `cat sample.tsv`:
 
-````
+```
 mean	stdev	0	1	2	3	4
 341.2	410.63044212527643	858	7	5	830	6
 17927.6	7244.128977316738	12778	14009	27767	9687	25397
