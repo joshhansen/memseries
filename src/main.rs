@@ -1,5 +1,6 @@
 use std::{
     ffi::OsStr,
+    io::Write,
     process::{Child, Command, Stdio},
     time::{Duration, SystemTime},
 };
@@ -82,7 +83,8 @@ fn main() {
     let sampling_interval: Duration = args.sampling_interval.into();
 
     for i in 0..args.burn_in {
-        eprintln!("Burn-in {}", i);
+        eprint!("Burn-in {} running...", i);
+        std::io::stderr().flush().unwrap();
 
         let mut p = spawn(&args.cmd);
 
@@ -90,14 +92,16 @@ fn main() {
 
         end_process(&mut p);
 
-        eprintln!("Burn-in {} done", i);
+        eprintln!(" done.");
     }
 
     // RSS memory usage in bytes
     // [run, sample]
     let mut samples: Vec<Vec<usize>> = Vec::with_capacity(args.n);
     for i in 0..args.n {
-        eprintln!("Run {}", i);
+        eprint!("Run {} running...", i);
+        std::io::stderr().flush().unwrap();
+
         let start = SystemTime::now();
         let last_sample: Option<SystemTime> = None;
         let p = spawn(&args.cmd);
@@ -125,7 +129,7 @@ fn main() {
                 end_process(&mut p);
 
                 samples.push(run_samples);
-                eprintln!("Run {} done", i);
+                eprintln!(" done.");
                 break 'inner;
             }
 
