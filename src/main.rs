@@ -87,6 +87,7 @@ fn main() {
         std::thread::sleep(duration);
 
         p.kill().unwrap();
+        p.wait().unwrap();
         eprintln!("Burn-in {} done", i);
     }
 
@@ -117,6 +118,7 @@ fn main() {
             if start.elapsed().unwrap() > duration {
                 let mut p = p;
                 p.kill().unwrap();
+                p.wait().unwrap();
                 samples.push(run_samples);
                 eprintln!("Run {} done", i);
                 break 'inner;
