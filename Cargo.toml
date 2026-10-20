@@ -3,7 +3,6 @@ name = "memseries"
 version = "0.1.0"
 edition = "2024"
 license = "GPL3"
-license-file = "gpl-3.0.txt"
 
 [dependencies]
 byte-unit = "5.2.6"
