@@ -65,6 +65,11 @@ fn rss(pid: u32) -> usize {
     statm.resident
 }
 
+fn end_process(p: &mut Child) {
+    p.kill().unwrap();
+    p.wait().unwrap();
+}
+
 const SEP: char = '\t';
 fn main() {
     let args = Args::parse();
@@ -87,8 +92,8 @@ fn main() {
 
         std::thread::sleep(duration);
 
-        p.kill().unwrap();
-        p.wait().unwrap();
+        end_process(&mut p);
+
         eprintln!("Burn-in {} done", i);
     }
 
@@ -118,8 +123,9 @@ fn main() {
 
             if start.elapsed().unwrap() > duration {
                 let mut p = p;
-                p.kill().unwrap();
-                p.wait().unwrap();
+
+                end_process(&mut p);
+
                 samples.push(run_samples);
                 eprintln!("Run {} done", i);
                 break 'inner;
