@@ -36,6 +36,10 @@ struct Args {
     /// Units to report results in; as parsed by byte_unit::Unit::parse_str
     #[arg(short, long, default_value = "KB")]
     units: Unit,
+
+    /// Precision of output, as understood by Rust (number of digits after decimal place)
+    #[arg(short, long, default_value_t = 0)]
+    precision: usize,
 }
 
 /// RSS memory usage in bytes
@@ -62,14 +66,18 @@ const SEP: char = '\t';
 fn main() {
     let args = Args::parse();
 
-    let duration = args.duration.as_secs();
-
     println!(
-        "Running {} {} times for {}s; burn-in of {} times; sampling every {}ms",
-        args.cmd, args.n, duration, args.burn_in, args.sampling_interval
+        "Running {} {} times for {}; burn-in of {} times; sampling every {}; output units of {}, precision of {} digits after decimal",
+        args.cmd,
+        args.n,
+        args.duration,
+        args.burn_in,
+        args.sampling_interval,
+        args.units,
+        args.precision
     );
 
-    let duration = Duration::from_secs(duration);
+    let duration: Duration = args.duration.into();
 
     let sampling_interval: Duration = args.sampling_interval.into();
 
@@ -149,10 +157,21 @@ fn main() {
             f64::sqrt(expected_sum_squares - mean * mean)
         };
 
-        let mean: Byte = (mean as usize).into();
-        let stdev: Byte = (stdev as usize).into();
+        let mean = {
+            let mean: Byte = (mean as usize).into();
 
-        print!("{}{}{}", mean, SEP, stdev);
+            let mean = mean.get_adjusted_unit(args.units);
+
+            mean.get_value()
+        };
+
+        let stdev = {
+            let stdev: Byte = (stdev as usize).into();
+            let stdev = stdev.get_adjusted_unit(args.units);
+            stdev.get_value()
+        };
+
+        print!("{:.3$}{}{:.3$}", mean, SEP, stdev, args.precision);
         for i in 0..args.n {
             print!("{}", SEP);
             let value = samples[i]
@@ -162,7 +181,7 @@ fn main() {
 
                     let v = v.get_adjusted_unit(args.units);
 
-                    v.to_string()
+                    format!("{:.1$}", v.get_value(), args.precision)
                 })
                 .unwrap_or_default();
             print!("{}", value);
