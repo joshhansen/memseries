@@ -34,6 +34,7 @@ fn parse_duration(s: &str) -> u64 {
     value * multiplier
 }
 
+/// Generates timeseries of program RSS usage
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
@@ -42,16 +43,16 @@ struct Args {
     cmd: String,
 
     /// Number of times to run
-    #[arg(short, long, default_value_t = 10)]
+    #[arg(short, default_value_t = 5)]
     n: usize,
 
-    /// How long each run lasts; in seconds; append m for minutes, h for hours, d for days"
+    /// How long each run lasts, in seconds; append m for minutes, h for hours, d for days
     #[arg(short, long, default_value = "2h")]
-    t: String,
+    duration: String,
 
-    /// Sampling interval in milliseconds
-    #[arg(short, long, default_value_t = 60000)]
-    sample: u64,
+    /// Sampling interval in milliseconds; how often RSS is measured and recorded
+    #[arg(short, long = "sample", default_value_t = 60000)]
+    sampling_interval: u64,
 
     /// How many runs to perform as burn-in before tracking
     #[arg(short, long = "burn", default_value_t = 1)]
@@ -68,16 +69,16 @@ const SEP: char = '\t';
 fn main() {
     let args = Args::parse();
 
-    let duration = parse_duration(args.t.as_str());
+    let duration = parse_duration(args.duration.as_str());
 
     println!(
         "Running {} {} times for {}s; burn-in of {} times; sampling every {}ms",
-        args.cmd, args.n, duration, args.burn_in, args.sample
+        args.cmd, args.n, duration, args.burn_in, args.sampling_interval
     );
 
     let duration = Duration::from_secs(duration);
 
-    let interval = Duration::from_millis(args.sample);
+    let interval = Duration::from_millis(args.sampling_interval);
 
     for i in 0..args.burn_in {
         eprintln!("Burn-in {}", i);
