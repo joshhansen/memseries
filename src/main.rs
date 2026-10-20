@@ -67,7 +67,7 @@ const SEP: char = '\t';
 fn main() {
     let args = Args::parse();
 
-    println!(
+    eprintln!(
         "Running {} {} times for {}; burn-in of {} times; sampling every {}; output units of {}; precision {} digits after decimal",
         args.cmd,
         args.n,
