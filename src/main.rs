@@ -6,35 +6,8 @@ use std::{
 
 use byte_unit::{Byte, Unit};
 use clap::Parser;
+use duration_string::DurationString;
 use procinfo::pid::statm;
-
-fn parse_multiplier(m: char) -> u64 {
-    if m == 'm' {
-        return 60;
-    }
-
-    if m == 'h' {
-        return 3600;
-    }
-
-    if m == 'd' {
-        return 3600 * 24;
-    }
-
-    return 1;
-}
-
-fn parse_duration(s: &str) -> u64 {
-    let multiplier = parse_multiplier(s.chars().last().unwrap());
-
-    let value: u64 = if multiplier > 1 {
-        s[0..s.len() - 1].parse().unwrap()
-    } else {
-        s.parse().unwrap()
-    };
-
-    value * multiplier
-}
 
 /// Generates timeseries of program RSS usage
 #[derive(Parser, Debug)]
@@ -48,13 +21,13 @@ struct Args {
     #[arg(short, default_value_t = 5)]
     n: usize,
 
-    /// How long each run lasts, in seconds; append m for minutes, h for hours, d for days
+    /// How long each run lasts; as parsed by duration_string::DurationString
     #[arg(short, long, default_value = "2h")]
-    duration: String,
+    duration: DurationString,
 
-    /// Sampling interval in milliseconds; how often RSS is measured and recorded
-    #[arg(short, long = "sample", default_value_t = 60000)]
-    sampling_interval: u64,
+    /// Sampling interval; how often RSS is measured and recorded; as parsed by duration_string::DurationString
+    #[arg(short, long = "sample", default_value = "1m")]
+    sampling_interval: DurationString,
 
     /// How many runs to perform as burn-in before tracking
     #[arg(short, long = "burn", default_value_t = 1)]
@@ -89,7 +62,7 @@ const SEP: char = '\t';
 fn main() {
     let args = Args::parse();
 
-    let duration = parse_duration(args.duration.as_str());
+    let duration = args.duration.as_secs();
 
     println!(
         "Running {} {} times for {}s; burn-in of {} times; sampling every {}ms",
@@ -98,7 +71,7 @@ fn main() {
 
     let duration = Duration::from_secs(duration);
 
-    let interval = Duration::from_millis(args.sampling_interval);
+    let sampling_interval: Duration = args.sampling_interval.into();
 
     for i in 0..args.burn_in {
         eprintln!("Burn-in {}", i);
@@ -129,7 +102,7 @@ fn main() {
             let sample = if let Some(last_sample) = &last_sample {
                 let since_last_sample = last_sample.elapsed().unwrap();
 
-                since_last_sample >= interval
+                since_last_sample >= sampling_interval
             } else {
                 true
             };
@@ -148,7 +121,7 @@ fn main() {
                 break 'inner;
             }
 
-            std::thread::sleep(interval);
+            std::thread::sleep(sampling_interval);
         }
     }
 
