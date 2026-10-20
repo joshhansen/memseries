@@ -4,6 +4,7 @@ use std::{
     time::{Duration, SystemTime},
 };
 
+use byte_unit::{Byte, Unit};
 use clap::Parser;
 use procinfo::pid::statm;
 
@@ -58,12 +59,21 @@ struct Args {
     /// How many runs to perform as burn-in before tracking
     #[arg(short, long = "burn", default_value_t = 1)]
     burn_in: usize,
+
+    /// Units to report results in; as parsed by byte_unit::Unit::parse_str
+    #[arg(short, long, default_value = "KB")]
+    units: Unit,
 }
 
+/// RSS memory usage in bytes
 fn rss(pid: u32) -> usize {
     let statm = statm(pid as i32).unwrap();
 
-    statm.resident
+    let pages = statm.resident;
+
+    let page_size = page_size::get();
+
+    pages * page_size
 }
 
 fn spawn<S: AsRef<OsStr>>(s: S) -> Child {
@@ -102,6 +112,8 @@ fn main() {
         eprintln!("Burn-in {} done", i);
     }
 
+    // RSS memory usage in bytes
+    // [run, sample]
     let mut samples: Vec<Vec<usize>> = Vec::with_capacity(args.n);
     for i in 0..args.n {
         eprintln!("Run {}", i);
@@ -164,10 +176,22 @@ fn main() {
             f64::sqrt(expected_sum_squares - mean * mean)
         };
 
+        let mean: Byte = (mean as usize).into();
+        let stdev: Byte = (stdev as usize).into();
+
         print!("{}{}{}", mean, SEP, stdev);
         for i in 0..args.n {
             print!("{}", SEP);
-            let value = samples[i].get(j).map(|v| v.to_string()).unwrap_or_default();
+            let value = samples[i]
+                .get(j)
+                .map(|v| {
+                    let v: Byte = (*v).into();
+
+                    let v = v.get_adjusted_unit(args.units);
+
+                    v.to_string()
+                })
+                .unwrap_or_default();
             print!("{}", value);
         }
         println!();
