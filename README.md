@@ -36,3 +36,7 @@ For this program, the runs diverge in the medium term, but only to arrive at a f
 In the mean, it can be seen that RSS usage does indeed grow over time, though in somewhat bursty fashion. 
 
 Load this into your favorite spreadsheet or any other analysis tool to generate charts, etc.
+
+## License
+
+memseries is licensed under the GPL version 3.
