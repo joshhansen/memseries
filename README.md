@@ -8,32 +8,48 @@ Each process is killed at the end of the specified duration.
 
 The stdout of the child processes is suppressed.
 
-Run `cargo run --release -- --help` to see the command line interface.
+Run `memseries --help` to see the command line interface:
 
-For example, this will run the `sample` program with default settings and store the output in `sample.memseries`:
+```
+Generates timeseries of program RSS usage
 
-`memseries /usr/bin/sample > sample.tsv`
+Usage: memseries [OPTIONS] <CMD>
+
+Arguments:
+  <CMD>  The program whose RSS to track
+
+Options:
+  -n <N>                            Number of times to run the program we're analyzing [default: 5]
+  -d, --duration <DURATION>         How long each run lasts; as parsed by duration_string::DurationString [default: 2h]
+  -s, --sample <SAMPLING_INTERVAL>  Sampling interval; how often RSS is measured and recorded; as parsed by duration_string::DurationString [default: 1m]
+  -b, --burn <BURN_IN>              How many runs to perform as burn-in before tracking [default: 1]
+  -u, --units <UNITS>               Units to report results in; as parsed by byte_unit::Unit::parse_str [default: KB]
+  -p, --precision <PRECISION>       Precision of output, as understood by Rust (number of digits after decimal place) [default: 0]
+  -h, --help                        Print help
+  -V, --version                     Print version
+```
+
+For example, this will run the `sample` program with megabyte units, a single decimal point of precision, and running 3 processes for 4 hours each; the default burn-in of a single run is overridden to have 0 burn-in runs. The  will  default settings and store the output in `sample.memseries`:
+
+`memseries -u MB -p 1 -n 3 -d 4h -b 0 /usr/bin/sample > sample.tsv`
 
 `cat sample.tsv`:
 
 ```tsv
-mean	stdev	0	1	2	3	4
-341.2	410.63044212527643	858	7	5	830	6
-17927.6	7244.128977316738	12778	14009	27767	9687	25397
-28452.8	1736.7193670826862	30153	25109	28934	28808	29260
-27752.4	4106.892333626469	29778	29111	29197	31023	19653
-28772	5128.849110668011	32346	18569	30938	30999	31008
-37028.4	4875.324547145536	38916	28627	34695	41693	41211
-56039.2	17363.09464813229	64864	32941	37320	71724	73347
-63330	13168.42880529032	69561	49024	45992	75906	76167
-70507	8766.174513435173	72641	71709	53594	77214	77377
-74630.2	4090.559345615246	73365	75587	67395	78818	77986
-75933.4	2092.3770788268907	74979	76648	72391	77205	78444
+mean	stdev	0	1	2
+0.0	0.0	0.0	0.0	0.0
+331.5	1.2	331.9	332.6	329.9
+335.0	1.5	336.5	335.6	332.9
+339.2	3.0	343.2	338.5	335.8
+341.9	2.8	345.5	341.4	338.8
+345.3	3.3	349.7	344.4	341.7
+348.0	3.0	351.9	347.3	344.7
+350.6	2.6	354.0	350.2	347.6
+353.4	2.4	356.5	353.2	350.6
+356.6	2.8	360.3	356.1	353.5
 ```
 
-For this program, the runs diverge in the medium term, but only to arrive at a fairly similar place by the end.
-
-In the mean, it can be seen that RSS usage does indeed grow over time, though in somewhat bursty fashion. 
+For this program, the runs are quite similar (as revealed by low standard deviation), with all increasing memory usage over the run, as summarized by the mean.
 
 Load this into your favorite spreadsheet or any other analysis tool to generate charts, etc.
 
