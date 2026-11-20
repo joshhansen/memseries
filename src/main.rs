@@ -138,10 +138,10 @@ fn main() {
 
     let max_collected = samples.iter().map(|s| s.len()).max().unwrap();
 
-    print!("mean{}stdev", SEP);
+    print!("mean RSS ({}){}stdev RSS ({})", args.units, SEP, args.units);
     for i in 0..args.n {
         print!("{}", SEP);
-        print!("{}", i);
+        print!("run {} RSS ({})", i, args.units);
     }
     println!();
 
