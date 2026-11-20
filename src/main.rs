@@ -124,10 +124,6 @@ fn main() {
             }
 
             if start.elapsed().unwrap() > duration {
-                let mut p = p;
-
-                end_process(&mut p);
-
                 samples.push(run_samples);
                 eprintln!(" done.");
                 break 'inner;
@@ -135,6 +131,9 @@ fn main() {
 
             std::thread::sleep(sampling_interval);
         }
+
+        let mut p = p;
+        end_process(&mut p);
     }
 
     let max_collected = samples.iter().map(|s| s.len()).max().unwrap();
@@ -176,9 +175,9 @@ fn main() {
         };
 
         print!("{:.3$}{}{:.3$}", mean, SEP, stdev, args.precision);
-        for i in 0..args.n {
+        for values in &samples {
             print!("{}", SEP);
-            let value = samples[i]
+            let value = values
                 .get(j)
                 .map(|v| {
                     let v: Byte = (*v).into();
